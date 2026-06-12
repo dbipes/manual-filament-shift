@@ -23,15 +23,6 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080`.
 
-## Test
-
-```sh
-node test.cjs
-```
-
-The test uses a small, self-contained OrcaSlicer-style fixture and verifies
-that three pauses are created and actionable AMS commands are removed.
-
 ## Safety
 
 Inspect the converted file in Bambu Studio or OrcaSlicer before printing.
