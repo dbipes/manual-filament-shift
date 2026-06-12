@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Convert Bambu and OrcaSlicer AMS G-code into manual filament-change pauses."
+    />
+    <title>Manual Filament Shift</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div>
+          <p class="eyebrow">Bambu / OrcaSlicer G-code utility</p>
+          <h1>Manual Filament Shift</h1>
+          <p class="hero-copy">
+            Turn AMS swaps into guided manual pauses, including changes that
+            happen in the middle of a layer.
+          </p>
+        </div>
+        <div class="privacy-pill">Runs locally in your browser</div>
+      </header>
+
+      <main>
+        <section class="panel upload-panel" aria-labelledby="upload-title">
+          <div class="section-heading">
+            <div>
+              <p class="step-label">Step 1</p>
+              <h2 id="upload-title">Choose a G-code file</h2>
+            </div>
+            <p>Your print file is never uploaded.</p>
+          </div>
+
+          <input id="file-input" type="file" accept=".gcode,.gco,.gc" hidden />
+          <button id="drop-zone" class="drop-zone" type="button">
+            <span class="upload-icon" aria-hidden="true"></span>
+            <strong>Drop G-code here</strong>
+            <span>or click to browse</span>
+            <small>Bambu Studio and OrcaSlicer exports</small>
+          </button>
+          <p id="file-error" class="inline-alert error" hidden></p>
+        </section>
+
+        <section id="workspace" hidden>
+          <section class="summary-grid" aria-label="File summary">
+            <article class="summary-card file-card">
+              <p>File</p>
+              <strong id="summary-file">-</strong>
+              <span id="summary-size">-</span>
+            </article>
+            <article class="summary-card">
+              <p>Layers</p>
+              <strong id="summary-layers">-</strong>
+              <span id="summary-height">-</span>
+            </article>
+            <article class="summary-card">
+              <p>Manual pauses</p>
+              <strong id="summary-events">-</strong>
+              <span id="summary-cleanup">-</span>
+            </article>
+            <article class="summary-card">
+              <p>Estimated print</p>
+              <strong id="summary-time">-</strong>
+              <span id="summary-slicer">-</span>
+            </article>
+          </section>
+
+          <section class="panel" aria-labelledby="filaments-title">
+            <div class="section-heading">
+              <div>
+                <p class="step-label">Step 2</p>
+                <h2 id="filaments-title">Name the filaments</h2>
+              </div>
+              <p>These labels are added to the pause comments and saved locally.</p>
+            </div>
+            <div id="filament-list" class="filament-list"></div>
+          </section>
+
+          <section class="panel" aria-labelledby="events-title">
+            <div class="section-heading">
+              <div>
+                <p class="step-label">Step 3</p>
+                <h2 id="events-title">Review pause points</h2>
+              </div>
+              <p id="selected-count">-</p>
+            </div>
+
+            <div id="event-warning" class="inline-alert warning" hidden></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Convert</th>
+                    <th scope="col">Pause</th>
+                    <th scope="col">Layer / height</th>
+                    <th scope="col">Estimated time</th>
+                    <th scope="col">Filament</th>
+                  </tr>
+                </thead>
+                <tbody id="event-list"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel output-panel" aria-labelledby="output-title">
+            <div class="section-heading">
+              <div>
+                <p class="step-label">Step 4</p>
+                <h2 id="output-title">Convert and download</h2>
+              </div>
+            </div>
+
+            <div class="option-grid">
+              <label class="option-card">
+                <input id="wait-temperature" type="checkbox" checked />
+                <span>
+                  <strong>Wait for change temperature</strong>
+                  <small>Uses the slicer's existing unload/load temperature.</small>
+                </span>
+              </label>
+              <label class="option-card">
+                <input id="remove-cleanup" type="checkbox" checked />
+                <span>
+                  <strong>Remove final AMS unload</strong>
+                  <small>Prevents the printer from trying to retract into an AMS.</small>
+                </span>
+              </label>
+              <label class="option-card">
+                <input id="set-filament-type" type="checkbox" checked />
+                <span>
+                  <strong>Update filament type</strong>
+                  <small>Keeps Bambu's material status aligned with each change.</small>
+                </span>
+              </label>
+            </div>
+
+            <label class="field-label" for="pause-command">
+              Pause command
+              <select id="pause-command">
+                <option value="M400 U1">M400 U1 - Bambu pause</option>
+                <option value="M600">M600 - firmware filament change</option>
+              </select>
+            </label>
+
+            <div class="convert-row">
+              <button id="convert-button" class="primary-button" type="button">
+                Convert and download G-code
+              </button>
+              <button id="reset-button" class="secondary-button" type="button">
+                Choose another file
+              </button>
+            </div>
+
+            <div id="result" class="result-card" hidden>
+              <div class="result-icon" aria-hidden="true">OK</div>
+              <div>
+                <strong id="result-title">Converted</strong>
+                <p id="result-copy"></p>
+                <button id="download-again" class="text-button" type="button">
+                  Download again
+                </button>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          Always inspect the generated file in Bambu Studio or OrcaSlicer
+          before printing. Manual filament changes require you to remain near
+          the printer.
+        </p>
+      </footer>
+    </div>
+
+    <script src="gcode-core.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
