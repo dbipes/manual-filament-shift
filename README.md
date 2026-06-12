@@ -29,9 +29,8 @@ Then open `http://localhost:8080`.
 node test.cjs
 ```
 
-The test uses the included `Icemaker Vents - Part Plates_PLA_4h45m.gcode`
-sample and verifies that three pauses are created and actionable AMS commands
-are removed.
+The test uses a small, self-contained OrcaSlicer-style fixture and verifies
+that three pauses are created and actionable AMS commands are removed.
 
 ## Safety
 
